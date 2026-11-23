@@ -1,0 +1,35 @@
+
+name: Build Golden Farm APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract project ZIP
+        run: |
+          ZIP=$(find . -maxdepth 1 -name 'GoldenFarm_V61_Android_Project*.zip' -print -quit)
+          test -n "$ZIP"
+          unzip -q "$ZIP" -d extracted
+          cd extracted/gfproj
+          gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoldenFarm-debug-apk
+          path: extracted/gfproj/app/build/outputs/apk/debug/app-debug.apk
